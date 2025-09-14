@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splash Animator</title>
+    <title>Splash Animator 3.14</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Material UI Icons CDN -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Monaco Editor dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.28.1/min/vs/loader.js"></script>
     <style>
@@ -19,6 +21,7 @@
             background-color: white;
             border: 1px solid #e5e7eb;
             touch-action: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .message-box {
             position: fixed;
@@ -86,6 +89,11 @@
             max-width: 400px;
             text-align: center;
         }
+        .tool-btn:disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="p-6">
@@ -105,9 +113,9 @@
     </div>
 
     <div class="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-8 mb-6">
-        <div class="flex items-center space-x-4">
-            <img src="splash-logo.png" alt="Splash Animator Logo" class="w-12 h-12 shadow-md">
-            <h1 class="text-3xl font-bold text-gray-800">Splash Animator</h1>
+        <div class="flex flex-wrap items-center justify-center sm:justify-start space-x-4">
+            <img src="splash-logo.png" style="width: 10%; height: 10%;">
+            <h1 class="text-3xl font-bold text-gray-800">Splash Animator 3.14</h1>
             <a href="https://github.com/randomUser2200/splash-animator/" target="_blank" class="flex items-center space-x-2 bg-gray-200 text-gray-800 hover:bg-gray-300 px-4 py-2 rounded-full font-medium transition-colors duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.6.11 1.05-.26 1.05-.584v-1.996c-3.342.727-4.04-1.61-4.04-1.61-.546-1.387-1.332-1.756-1.332-1.756-1.088-.745.083-.73.083-.73 1.205.085 1.838 1.238 1.838 1.238 1.07 1.835 2.809 1.305 3.493.997.108-.775.419-1.305.762-1.605-2.665-.304-5.466-1.334-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.12-.303-.535-1.52.115-3.176 0 0 1-.32 3.285 1.23.955-.266 1.96-.4 2.96-.4.998 0 2.003.134 2.96.4 2.28-1.55 3.285-1.23 3.285-1.23.65 1.656.235 2.873.115 3.176.77.84 1.235 1.91 1.235 3.22 0 4.609-2.801 5.626-5.475 5.92-.415.358-.8.95-.8 1.92v2.842c0 .324.444.694 1.05.584 4.768-1.587 8.207-6.085 8.207-11.387c0-6.627-5.374-12-12-12z"/>
@@ -116,52 +124,81 @@
             </a>
         </div>
         <div class="flex flex-wrap items-center justify-center space-x-2 md:space-x-4">
-            <button id="rect-btn" class="tool-btn bg-blue-500 text-white transition-colors duration-200 px-4 py-2 rounded-full font-medium">Rectangle</button>
-            <button id="circle-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Circle</button>
-            <button id="line-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Line</button>
-            <button id="text-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Text</button>
-            <button id="select-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Select</button>
-            <button id="erase-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Erase</button>
+            <button id="undo-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium" disabled>
+                <span class="material-symbols-outlined">undo</span>
+            </button>
+            <button id="redo-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium" disabled>
+                <span class="material-symbols-outlined">redo</span>
+            </button>
+            <button id="rect-btn" class="tool-btn bg-blue-500 text-white transition-colors duration-200 p-3 rounded-full font-medium">
+                <span class="material-symbols-outlined">crop_square</span>
+            </button>
+            <button id="circle-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium">
+                <span class="material-symbols-outlined">circle</span>
+            </button>
+            <button id="line-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium">
+                <span class="material-symbols-outlined">horizontal_rule</span>
+            </button>
+            <button id="text-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium">
+                <span class="material-symbols-outlined">text_fields</span>
+            </button>
+            <button id="select-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium">
+                <span class="material-symbols-outlined">pan_tool</span>
+            </button>
+            <button id="erase-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 p-3 rounded-full font-medium">
+                <span class="material-symbols-outlined">ink_eraser</span>
+            </button>
         </div>
     </div>
 
     <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-6 items-start">
-        <div class="bg-white rounded-xl shadow-lg p-6 w-full lg:w-3/4 flex-grow">
-            <div class="aspect-video">
-                <svg id="drawing-area" class="w-full h-full rounded-lg drawing-cursor">
-                    <!-- This style tag will be populated by the CSS editor -->
-                    <style id="svg-styles"></style>
-                </svg>
+        <!-- Main Scene and CSS Editor -->
+        <div class="flex flex-col space-y-4 w-full lg:w-3/4">
+            <div class="bg-white rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Scene Editor</h2>
+                <div class="aspect-video rounded-lg overflow-hidden">
+                    <svg id="drawing-area" class="w-full h-full rounded-lg drawing-cursor">
+                        <style id="svg-styles"></style>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- CSS Editor Panel -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">CSS Editor</h2>
+                <div id="css-editor-container"></div>
             </div>
         </div>
 
+        <!-- Sidebar for tools and links -->
         <div class="flex flex-col space-y-4 w-full lg:w-1/4 flex-shrink-0">
             <!-- Properties & Styling Panel -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Properties & Styling</h2>
                 <div class="flex flex-col space-y-3">
+                    <div class="flex flex-col">
+                        <label for="shape-id" class="text-gray-600 font-medium mb-1">Shape ID (Required):</label>
+                        <input type="text" id="shape-id" placeholder="Enter ID..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
+                    </div>
                     <div class="flex items-center space-x-2">
                         <label for="fill-color" class="text-gray-600 font-medium">Fill:</label>
                         <input type="color" id="fill-color" value="#005B99" class="w-8 h-8 rounded-full border-none cursor-pointer">
                     </div>
-                    <div class="flex flex-col">
-                        <label for="shape-id" class="text-gray-600 font-medium mb-1">Shape ID:</label>
-                        <input type="text" id="shape-id" placeholder="Enter ID..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
-                    </div>
-                    <button id="apply-id-btn" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Apply ID</button>
                     <!-- New Text Input for Text Tool -->
                     <div id="text-tool-controls" class="flex flex-col space-y-3 hidden">
                         <label for="text-content" class="text-gray-600 font-medium mb-1">Text Content:</label>
                         <input type="text" id="text-content" placeholder="Enter text..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
+                        <label for="font-family-select" class="text-gray-600 font-medium mb-1">Typeface (CSS Class):</label>
+                        <select id="font-family-select" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
+                            <option value="font-sans">Sans-serif</option>
+                            <option value="font-serif">Serif</option>
+                            <option value="font-mono">Monospace</option>
+                            <option value="font-cursive">Cursive</option>
+                            <option value="font-fantasy">Fantasy</option>
+                        </select>
+                        <p class="text-sm text-gray-500 mt-1">Define the font in the CSS Editor using the selected class.</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- CSS Editor Panel -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">CSS Editor</h2>
-                <div id="css-editor-container"></div>
-                <button id="apply-css-btn" class="mt-3 w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Apply CSS</button>
             </div>
 
             <!-- CSS Resources Panel -->
@@ -179,8 +216,17 @@
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Export & Import</h2>
                 <div class="flex flex-col space-y-3">
+                    <div class="flex flex-col">
+                        <label for="animation-name" class="text-gray-600 font-medium mb-1">Animation Name:</label>
+                        <input type="text" id="animation-name" placeholder="My Animation" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
+                    </div>
+                    <div class="relative w-full">
+                        <button id="import-btn" class="w-full bg-gray-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-600 transition-colors duration-200">Open .web-animx File</button>
+                        <input type="file" id="import-file" class="absolute inset-0 opacity-0 cursor-pointer" accept=".web-animx">
+                    </div>
+                    <button id="export-animx-btn" class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Export as .web-animx</button>
                     <button id="export-html-btn" class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Export as .html</button>
-                    <div class="relative">
+                    <div class="relative w-full">
                         <button id="import-image-btn" class="w-full bg-gray-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-600 transition-colors duration-200">Import Image</button>
                         <input type="file" id="import-image-file" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
                     </div>
@@ -200,20 +246,29 @@
         const shapeIdInput = document.getElementById('shape-id');
         const textContentInput = document.getElementById('text-content');
         const textToolControls = document.getElementById('text-tool-controls');
+        const fontFamilySelect = document.getElementById('font-family-select');
         const downloadLink = document.getElementById('download-link');
+        const importFile = document.getElementById('import-file');
         const importImageFile = document.getElementById('import-image-file');
         const messageBox = document.getElementById('message-box');
         const confirmModal = document.getElementById('confirm-modal');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const animationNameInput = document.getElementById('animation-name');
 
         let isDrawing = false;
         let startPoint = { x: 0, y: 0 };
         let currentShape = null;
-        let currentTool = 'rectangle';
+        let currentTool = 'rect';
         let selectedShape = null;
         let shapes = []; // The internal data model for the drawing
         let cssEditorInstance;
+
+        // History Stacks for Undo/Redo
+        let undoStack = [];
+        let redoStack = [];
 
         // Variables for moving selected shapes
         let isDragging = false;
@@ -229,7 +284,105 @@
                 theme: 'vs-light',
                 automaticLayout: true
             });
+            // Auto-apply CSS on content change
+            cssEditorInstance.getModel().onDidChangeContent(() => {
+                applyCss();
+            });
         });
+
+        // --- History Management ---
+
+        /**
+         * Saves the current canvas state to the undo stack.
+         * @param {boolean} clearRedoStack If true, clears the redo stack (for new actions).
+         */
+        function saveState(clearRedoStack = true) {
+            const serializedShapes = shapes.map(s => ({
+                type: s.type,
+                id: s.id,
+                class: s.class,
+                attributes: s.attributes
+            }));
+            undoStack.push({
+                shapes: serializedShapes,
+                css: cssEditorInstance.getValue()
+            });
+            if (clearRedoStack) {
+                redoStack = [];
+            }
+            updateHistoryButtons();
+        }
+
+        /**
+         * Loads a saved state from the history stack.
+         * @param {object} state The state object to load.
+         */
+        function loadState(state) {
+            // Clear current canvas
+            while (svg.lastChild && svg.lastChild.tagName !== 'style') {
+                svg.removeChild(svg.lastChild);
+            }
+            shapes = [];
+            selectedShape = null;
+
+            // Load CSS
+            cssEditorInstance.setValue(state.css);
+            svgStyles.textContent = state.css;
+
+            // Load shapes
+            state.shapes.forEach(shapeData => {
+                const newShape = document.createElementNS('http://www.w3.org/2000/svg', shapeData.type);
+                for (const attr in shapeData.attributes) {
+                    newShape.setAttribute(attr, shapeData.attributes[attr]);
+                }
+                if (shapeData.id) {
+                    newShape.setAttribute('id', shapeData.id);
+                }
+                if (shapeData.class) {
+                    newShape.setAttribute('class', shapeData.class);
+                }
+                if (shapeData.type === 'text') {
+                    newShape.textContent = shapeData.attributes.content;
+                }
+                svg.appendChild(newShape);
+                shapes.push({ element: newShape, ...shapeData });
+            });
+        }
+
+        /**
+         * Updates the disabled state of the undo/redo buttons.
+         */
+        function updateHistoryButtons() {
+            undoBtn.disabled = undoStack.length <= 1;
+            redoBtn.disabled = redoStack.length === 0;
+        }
+
+        /**
+         * Undoes the last action.
+         */
+        function undo() {
+            if (undoStack.length > 1) {
+                const lastState = undoStack.pop();
+                redoStack.push(lastState);
+                const previousState = undoStack[undoStack.length - 1];
+                loadState(previousState);
+                updateHistoryButtons();
+                showMessage("Action undone.");
+            }
+        }
+
+        /**
+         * Redoes the last undone action.
+         */
+        function redo() {
+            if (redoStack.length > 0) {
+                const nextState = redoStack.pop();
+                undoStack.push(nextState);
+                loadState(nextState);
+                updateHistoryButtons();
+                showMessage("Action redone.");
+            }
+        }
 
         // --- Utility Functions ---
 
@@ -270,11 +423,9 @@
          * Clears all shapes from the SVG canvas and the data model.
          */
         function clearDrawing() {
-            while (svg.lastChild && svg.lastChild.tagName !== 'style') {
-                svg.removeChild(svg.lastChild);
-            }
-            shapes = [];
-            selectedShape = null;
+            // This function now just saves an empty state, which is handled by saveState
+            saveState();
+            loadState(undoStack[undoStack.length - 1]);
         }
 
         /**
@@ -291,6 +442,18 @@
             // Update properties panel
             fillInput.value = selectedShape.getAttribute('fill') || selectedShape.getAttribute('stroke') || '#000000';
             shapeIdInput.value = selectedShape.id || '';
+            
+            // Update text properties if the shape is a text element
+            if (selectedShape.tagName === 'text') {
+                textToolControls.classList.remove('hidden');
+                textContentInput.value = selectedShape.textContent;
+                // Get the class from the element, check if it exists in the dropdown, otherwise set to default.
+                const classList = selectedShape.classList;
+                const selectedClass = Array.from(classList).find(cls => cls.startsWith('font-'));
+                fontFamilySelect.value = selectedClass || 'font-sans';
+            } else {
+                textToolControls.classList.add('hidden');
+            }
         }
 
         /**
@@ -298,18 +461,216 @@
          */
         function applyCss() {
             svgStyles.textContent = cssEditorInstance.getValue();
-            showMessage("CSS applied!");
+            saveState();
+        }
+
+        // --- Export Functions ---
+
+        /**
+         * Exports the current canvas state as a .web-animx XML file.
+         */
+        function exportAsWebAnimx() {
+            const xmlDoc = document.implementation.createDocument(null, 'splash-animation');
+            const root = xmlDoc.documentElement;
+
+            // Add metadata
+            const metadataNode = xmlDoc.createElement('metadata');
+            const nameNode = xmlDoc.createElement('name');
+            const animationName = animationNameInput.value.trim() || 'My Animation';
+            nameNode.textContent = animationName;
+            metadataNode.appendChild(nameNode);
+            root.appendChild(metadataNode);
+
+            // Add CSS
+            const cssNode = xmlDoc.createElement('css');
+            cssNode.textContent = cssEditorInstance.getValue();
+            root.appendChild(cssNode);
+
+            // Add shapes
+            const elementsNode = xmlDoc.createElement('elements');
+            shapes.forEach(shapeData => {
+                const shapeNode = xmlDoc.createElement(shapeData.type);
+                for (const attr in shapeData.attributes) {
+                    shapeNode.setAttribute(attr, shapeData.attributes[attr]);
+                }
+                if (shapeData.type === 'text') {
+                    shapeNode.textContent = shapeData.attributes.content;
+                }
+                // Add ID and class attributes if they exist
+                if (shapeData.id) {
+                    shapeNode.setAttribute('id', shapeData.id);
+                }
+                if (shapeData.class) {
+                    shapeNode.setAttribute('class', shapeData.class);
+                }
+                elementsNode.appendChild(shapeNode);
+            });
+            root.appendChild(elementsNode);
+
+            const serializer = new XMLSerializer();
+            const xmlString = serializer.serializeToString(xmlDoc);
+            const filename = `${animationName.toLowerCase().replace(/ /g, '_')}.web-animx`;
+            const blob = new Blob([xmlString], { type: 'text/xml' });
+            downloadBlob(blob, filename);
+            showMessage("Exported as .web-animx");
+        }
+
+        /**
+         * Exports the current canvas state as a standalone HTML file.
+         */
+        function exportAsHtml() {
+            // Get the current dimensions of the SVG drawing area
+            const rect = svg.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+
+            // Clone the SVG to manipulate its attributes without affecting the live canvas
+            const clonedSvg = svg.cloneNode(true);
+            clonedSvg.removeAttribute('width');
+            clonedSvg.removeAttribute('height');
+            clonedSvg.classList.remove('drawing-cursor', 'selection-cursor', 'erase-cursor'); // Remove editor-specific classes
+            clonedSvg.style.removeProperty('width');
+            clonedSvg.style.removeProperty('height');
+            clonedSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+            const svgContent = clonedSvg.outerHTML;
+            const cssContent = svgStyles.textContent;
+            const animationName = animationNameInput.value.trim() || 'My Splash Animation';
+
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${animationName}</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6;
+            overflow: hidden;
+        }
+        svg {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        ${cssContent}
+    </style>
+</head>
+<body>
+    ${svgContent}
+</body>
+</html>
+`;
+            const filename = `${animationName.toLowerCase().replace(/ /g, '_')}.html`;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            downloadBlob(blob, filename);
+            showMessage("Exported as .html");
+        }
+
+        // --- Import Function ---
+
+        /**
+         * Imports a .web-animx XML file and reconstructs the canvas.
+         * @param {File} file The .web-animx file to import.
+         */
+        function importWebAnimx(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
+                    
+                    if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+                        throw new Error('Failed to parse XML file.');
+                    }
+                    
+                    // Create the new state object
+                    const newState = {
+                        shapes: [],
+                        css: ''
+                    };
+
+                    // Load metadata
+                    const nameNode = xmlDoc.querySelector('metadata > name');
+                    if (nameNode) {
+                        animationNameInput.value = nameNode.textContent;
+                    } else {
+                        animationNameInput.value = '';
+                    }
+
+                    // Apply CSS
+                    const cssNode = xmlDoc.querySelector('css');
+                    if (cssNode) {
+                        newState.css = cssNode.textContent;
+                    }
+
+                    // Rebuild shapes data model
+                    const elementsNode = xmlDoc.querySelector('elements');
+                    if (elementsNode) {
+                        elementsNode.childNodes.forEach(child => {
+                            if (child.nodeType === 1) { // Element node
+                                const tagName = child.tagName;
+                                const shapeData = {
+                                    type: tagName,
+                                    attributes: {}
+                                };
+                                
+                                for (let i = 0; i < child.attributes.length; i++) {
+                                    const attr = child.attributes[i];
+                                    shapeData.attributes[attr.name] = attr.value;
+                                }
+
+                                if (tagName === 'text') {
+                                    shapeData.attributes.content = child.textContent;
+                                }
+
+                                if (child.hasAttribute('id')) {
+                                    shapeData.id = child.getAttribute('id');
+                                }
+                                if (child.hasAttribute('class')) {
+                                    shapeData.class = child.getAttribute('class');
+                                }
+
+                                newState.shapes.push(shapeData);
+                            }
+                        });
+                    }
+                    
+                    undoStack = []; // Reset history for import
+                    redoStack = [];
+                    loadState(newState); // Load the new state
+                    saveState(); // Save the new state to the history
+                    showMessage("Animation loaded successfully!");
+                } catch (error) {
+                    showMessage("Error: Invalid .web-animx file format.", true);
+                    console.error('Import failed:', error);
+                    loadState(undoStack[undoStack.length - 1]); // Revert to last valid state
+                }
+            };
+            reader.readAsText(file);
         }
 
         // --- Event Handlers for drawing and selection ---
 
         function onDrawingClick(e) {
+            let actionPerformed = false;
             if (currentTool === 'erase') {
                 const target = e.target;
                 if (target.tagName === 'rect' || target.tagName === 'circle' || target.tagName === 'line' || target.tagName === 'image' || target.tagName === 'text') {
-                    // Remove the shape from the SVG and the data model
                     target.remove();
                     shapes = shapes.filter(shape => shape.element !== target);
+                    actionPerformed = true;
                     showMessage("Shape erased.");
                 }
             } else if (currentTool === 'select') {
@@ -321,95 +682,118 @@
                         selectedShape.classList.remove('selected-shape');
                         selectedShape = null;
                         shapeIdInput.value = '';
+                        textToolControls.classList.add('hidden');
                     }
                 }
             } else if (currentTool === 'text') {
-                const rect = svg.getBoundingClientRect();
-                const clickPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-                
+                const shapeId = shapeIdInput.value.trim();
                 const textContent = textContentInput.value.trim();
+                const fontFamilyClass = fontFamilySelect.value;
+                if (!shapeId) {
+                    showMessage("Please enter a Shape ID first.", true);
+                    return;
+                }
                 if (!textContent) {
                     showMessage("Please enter text content.", true);
                     return;
                 }
                 
-                // Deselect any previous shape
                 if (selectedShape) {
                     selectedShape.classList.remove('selected-shape');
                     selectedShape = null;
                 }
+
+                const rect = svg.getBoundingClientRect();
+                const clickPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
                 
                 const newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newText.setAttribute('id', shapeId);
                 newText.setAttribute('x', clickPoint.x);
                 newText.setAttribute('y', clickPoint.y);
                 newText.setAttribute('fill', fillInput.value);
                 newText.setAttribute('font-size', '24');
+                newText.classList.add(fontFamilyClass);
                 newText.textContent = textContent;
                 
                 svg.appendChild(newText);
                 shapes.push({
                     element: newText,
                     type: 'text',
+                    id: shapeId,
+                    class: fontFamilyClass,
                     attributes: { x: clickPoint.x, y: clickPoint.y, fill: fillInput.value, 'font-size': '24', content: textContent }
                 });
+                actionPerformed = true;
                 showMessage("Text added successfully!");
+                shapeIdInput.value = '';
+            }
+
+            if (actionPerformed) {
+                saveState();
             }
         }
 
         function onMouseDown(e) {
-            const rect = svg.getBoundingClientRect();
-            const clickPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-
-            if (currentTool !== 'select' && currentTool !== 'erase' && currentTool !== 'text') {
-                // Drawing a new shape
-                isDrawing = true;
-                startPoint = clickPoint;
-
-                // Deselect any previous shape
-                if (selectedShape) {
-                    selectedShape.classList.remove('selected-shape');
-                    selectedShape = null;
+            if (currentTool === 'select' || currentTool === 'erase' || currentTool === 'text') {
+                const target = e.target;
+                if (currentTool === 'select' && (target.tagName === 'rect' || target.tagName === 'circle' || target.tagName === 'line' || target.tagName === 'image' || target.tagName === 'text')) {
+                    isDragging = true;
+                    const rect = svg.getBoundingClientRect();
+                    dragStartPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                    const tagName = e.target.tagName;
+                    selectedShape = e.target;
+                    shapeStartAttrs = {
+                        x: tagName === 'rect' || tagName === 'image' || tagName === 'text' ? parseFloat(selectedShape.getAttribute('x')) : null,
+                        y: tagName === 'rect' || tagName === 'image' || tagName === 'text' ? parseFloat(selectedShape.getAttribute('y')) : null,
+                        cx: tagName === 'circle' ? parseFloat(selectedShape.getAttribute('cx')) : null,
+                        cy: tagName === 'circle' ? parseFloat(selectedShape.getAttribute('cy')) : null,
+                        x1: tagName === 'line' ? parseFloat(selectedShape.getAttribute('x1')) : null,
+                        y1: tagName === 'line' ? parseFloat(selectedShape.getAttribute('y1')) : null,
+                        x2: tagName === 'line' ? parseFloat(selectedShape.getAttribute('x2')) : null,
+                        y2: tagName === 'line' ? parseFloat(selectedShape.getAttribute('y2')) : null
+                    };
                 }
-
-                currentShape = document.createElementNS('http://www.w3.org/2000/svg', currentTool === 'rectangle' ? 'rect' : currentTool === 'circle' ? 'circle' : 'line');
-                currentShape.setAttribute('fill', fillInput.value);
-                currentShape.setAttribute('stroke', fillInput.value);
-
-                if (currentTool === 'rectangle') {
-                    currentShape.setAttribute('x', startPoint.x);
-                    currentShape.setAttribute('y', startPoint.y);
-                    currentShape.setAttribute('width', '0');
-                    currentShape.setAttribute('height', '0');
-                } else if (currentTool === 'circle') {
-                    currentShape.setAttribute('cx', startPoint.x);
-                    currentShape.setAttribute('cy', startPoint.y);
-                    currentShape.setAttribute('r', '0');
-                } else if (currentTool === 'line') {
-                    currentShape.setAttribute('x1', startPoint.x);
-                    currentShape.setAttribute('y1', startPoint.y);
-                    currentShape.setAttribute('x2', currentPoint.x);
-                    currentShape.setAttribute('y2', currentPoint.y);
-                    currentShape.setAttribute('stroke-width', '2');
-                }
-                
-                svg.appendChild(currentShape);
-            } else if (currentTool === 'select' && (e.target.tagName === 'rect' || e.target.tagName === 'circle' || e.target.tagName === 'line' || e.target.tagName === 'image' || e.target.tagName === 'text')) {
-                // Starting to drag a selected shape
-                isDragging = true;
-                dragStartPoint = clickPoint;
-                const tagName = e.target.tagName;
-                selectedShape = e.target;
-                shapeStartAttrs = {
-                    x: tagName === 'rect' || tagName === 'image' || tagName === 'text' ? parseFloat(selectedShape.getAttribute('x')) : null,
-                    y: tagName === 'rect' || tagName === 'image' || tagName === 'text' ? parseFloat(selectedShape.getAttribute('y')) : null,
-                    cx: tagName === 'circle' ? parseFloat(selectedShape.getAttribute('cx')) : null,
-                    cy: tagName === 'circle' ? parseFloat(selectedShape.getAttribute('cy')) : null,
-                    x1: tagName === 'line' ? parseFloat(selectedShape.getAttribute('x1')) : null,
-                    y1: tagName === 'line' ? parseFloat(selectedShape.getAttribute('y1')) : null,
-                    x2: tagName === 'line' ? parseFloat(selectedShape.getAttribute('x2')) : null,
-                    y2: tagName === 'line' ? parseFloat(selectedShape.getAttribute('y2')) : null
-                };
+                return;
             }
+
+            const shapeId = shapeIdInput.value.trim();
+            if (!shapeId) {
+                showMessage("Please enter a Shape ID first.", true);
+                return;
+            }
+
+            isDrawing = true;
+            const rect = svg.getBoundingClientRect();
+            startPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            if (selectedShape) {
+                selectedShape.classList.remove('selected-shape');
+                selectedShape = null;
+            }
+
+            currentShape = document.createElementNS('http://www.w3.org/2000/svg', currentTool === 'rect' ? 'rect' : currentTool === 'circle' ? 'circle' : 'line');
+            currentShape.setAttribute('id', shapeId);
+            currentShape.setAttribute('fill', fillInput.value);
+            currentShape.setAttribute('stroke', fillInput.value);
+
+            if (currentTool === 'rect') {
+                currentShape.setAttribute('x', startPoint.x);
+                currentShape.setAttribute('y', startPoint.y);
+                currentShape.setAttribute('width', '0');
+                currentShape.setAttribute('height', '0');
+            } else if (currentTool === 'circle') {
+                currentShape.setAttribute('cx', startPoint.x);
+                currentShape.setAttribute('cy', startPoint.y);
+                currentShape.setAttribute('r', '0');
+            } else if (currentTool === 'line') {
+                currentShape.setAttribute('x1', startPoint.x);
+                currentShape.setAttribute('y1', startPoint.y);
+                currentShape.setAttribute('x2', startPoint.x);
+                currentShape.setAttribute('y2', startPoint.y);
+                currentShape.setAttribute('stroke-width', '2');
+            }
+            
+            svg.appendChild(currentShape);
         }
 
         function onMouseMove(e) {
@@ -417,8 +801,7 @@
             const currentPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
             if (isDrawing) {
-                // Continue drawing a new shape
-                if (currentTool === 'rectangle') {
+                if (currentTool === 'rect') {
                     const x = Math.min(startPoint.x, currentPoint.x);
                     const y = Math.min(startPoint.y, currentPoint.y);
                     const width = Math.abs(startPoint.x - currentPoint.x);
@@ -437,11 +820,10 @@
                     currentShape.setAttribute('y2', currentPoint.y);
                 }
             } else if (isDragging && selectedShape) {
-                // Move the selected shape
                 const dx = currentPoint.x - dragStartPoint.x;
                 const dy = currentPoint.y - dragStartPoint.y;
-
                 const tagName = selectedShape.tagName;
+                
                 if (tagName === 'rect' || tagName === 'image' || tagName === 'text') {
                     selectedShape.setAttribute('x', shapeStartAttrs.x + dx);
                     selectedShape.setAttribute('y', shapeStartAttrs.y + dy);
@@ -459,73 +841,60 @@
 
         function onMouseUp() {
             if (isDrawing) {
-                // Finalize the new shape
                 isDrawing = false;
                 if (currentShape) {
                     const shapeData = {
                         element: currentShape,
                         type: currentShape.tagName,
+                        id: currentShape.id,
                         attributes: {}
                     };
                     for (const attr of currentShape.attributes) {
                         shapeData.attributes[attr.name] = attr.value;
                     }
+                    if (currentShape.tagName === 'text') {
+                        shapeData.attributes.content = currentShape.textContent;
+                        shapeData.class = currentShape.getAttribute('class');
+                    }
                     shapes.push(shapeData);
                     currentShape = null;
+                    shapeIdInput.value = '';
+                    saveState();
                 }
             }
-            isDragging = false;
+            if (isDragging) {
+                isDragging = false;
+                saveState();
+            }
         }
 
         // --- Event Handlers for UI elements ---
         
-        document.getElementById('export-html-btn').addEventListener('click', () => {
-            const svgContent = svg.outerHTML;
-            const cssContent = svgStyles.textContent;
+        document.getElementById('export-animx-btn').addEventListener('click', exportAsWebAnimx);
+        document.getElementById('export-html-btn').addEventListener('click', exportAsHtml);
 
-            const htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Splash Animation</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f3f4f6;
-        }
-        svg {
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border-radius: 0.5rem;
-        }
-        ${cssContent}
-    </style>
-</head>
-<body>
-    ${svgContent}
-</body>
-</html>
-`;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            downloadBlob(blob, 'splash_animation.html');
-            showMessage("Exported as .html");
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                importWebAnimx(file);
+            }
         });
-        
+
         importImageFile.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
+
+            const shapeId = shapeIdInput.value.trim();
+            if (!shapeId) {
+                showMessage("Please enter a Shape ID first.", true);
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = (event) => {
                 const imageUrl = event.target.result;
                 const newImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                newImage.setAttribute('id', shapeId);
                 newImage.setAttribute('href', imageUrl);
                 newImage.setAttribute('x', '10');
                 newImage.setAttribute('y', '10');
@@ -536,9 +905,12 @@
                 shapes.push({
                     element: newImage,
                     type: 'image',
+                    id: shapeId,
                     attributes: { href: imageUrl, x: '10', y: '10', width: '100', height: '100' }
                 });
+                saveState();
                 showMessage("Image imported successfully!");
+                shapeIdInput.value = '';
             };
             reader.readAsDataURL(file);
         });
@@ -557,26 +929,8 @@
             showMessage("Canvas cleared.");
         });
         
-        document.getElementById('apply-id-btn').addEventListener('click', () => {
-            if (selectedShape) {
-                const newId = shapeIdInput.value.trim();
-                if (newId) {
-                    selectedShape.id = newId;
-                    showMessage(`ID '${newId}' applied.`);
-                } else {
-                    selectedShape.removeAttribute('id');
-                    showMessage("ID removed.");
-                }
-            } else {
-                showMessage("Please select a shape first.", true);
-            }
-        });
-
-        document.getElementById('apply-css-btn').addEventListener('click', applyCss);
-        
         fillInput.addEventListener('input', () => {
             if (selectedShape) {
-                // Only apply fill/stroke to shapes that are not images or text
                 if (selectedShape.tagName !== 'image') {
                     selectedShape.setAttribute('fill', fillInput.value);
                 } else {
@@ -584,6 +938,9 @@
                 }
             }
         });
+
+        undoBtn.addEventListener('click', undo);
+        redoBtn.addEventListener('click', redo);
 
         // --- Initial Setup and Event Listeners ---
         window.onload = function() {
@@ -597,17 +954,15 @@
                     btn.classList.add('bg-blue-500', 'text-white');
                     btn.classList.remove('bg-gray-200', 'text-gray-800');
                     
-                    const newTool = btn.id.split('-')[0];
+                    const newTool = btn.id.replace('-btn', '');
                     currentTool = newTool;
                     
-                    // Show/hide specific controls for text tool
                     if (currentTool === 'text') {
                         textToolControls.classList.remove('hidden');
                     } else {
                         textToolControls.classList.add('hidden');
                     }
                     
-                    // Update cursor based on selected tool
                     svg.classList.remove('drawing-cursor', 'selection-cursor', 'erase-cursor');
                     if (currentTool === 'select') {
                         svg.classList.add('selection-cursor');
@@ -624,7 +979,6 @@
             svg.addEventListener('mousemove', onMouseMove);
             svg.addEventListener('mouseup', onMouseUp);
 
-            // Add listener for shape selection and erasing
             svg.addEventListener('click', onDrawingClick);
 
             svg.addEventListener('touchstart', (e) => {
@@ -639,6 +993,9 @@
                 e.preventDefault();
                 onMouseUp(e.changedTouches[0]);
             });
+
+            // Initial state save
+            saveState();
         };
     </script>
 </body>
