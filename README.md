@@ -2,6 +2,8 @@
 
 Animation tool with modern web standards for beginners
 
+File size: 31 KB
+
 This is an animation tool inspired by Flash (now obsolete) with modern web standards: a visual editor, minimal UI fluff, and a CSS editor.
 
 The editor uses SVG under the hood so it enables vector-based elements, which don't change regardless of resolution. It includes a CSS editor (Monaco Editor-powered) for things that the visual editor doesn't include natively. The CSS editor is where animation magic kicks in.
