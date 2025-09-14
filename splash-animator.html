@@ -106,7 +106,7 @@
 
     <div class="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-8 mb-6">
         <div class="flex items-center space-x-4">
-            <img src="splash-logo.png" alt="Splash Animator Logo" class="w-12 h-12 rounded-full shadow-md">
+            <img src="splash-logo.png" alt="Splash Animator Logo" class="w-12 h-12 shadow-md">
             <h1 class="text-3xl font-bold text-gray-800">Splash Animator</h1>
             <a href="https://github.com/randomUser2200/splash-animator/" target="_blank" class="flex items-center space-x-2 bg-gray-200 text-gray-800 hover:bg-gray-300 px-4 py-2 rounded-full font-medium transition-colors duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
@@ -157,14 +157,14 @@
                 </div>
             </div>
 
-            <!-- CSS Editor panel -->
+            <!-- CSS Editor Panel -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">CSS Editor</h2>
                 <div id="css-editor-container"></div>
                 <button id="apply-css-btn" class="mt-3 w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Apply CSS</button>
             </div>
 
-            <!-- CSS Resources panel -->
+            <!-- CSS Resources Panel -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">CSS Resources</h2>
                 <p class="text-gray-600 mb-4">New to CSS? Here are some great places to learn!</p>
@@ -175,7 +175,7 @@
                 </ul>
             </div>
 
-            <!-- Export & Import panel -->
+            <!-- Export & Import Panel -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Export & Import</h2>
                 <div class="flex flex-col space-y-3">
@@ -220,7 +220,7 @@
         let dragStartPoint = { x: 0, y: 0 };
         let shapeStartAttrs = {};
 
-        // --- Monaco Editor setup ---
+        // --- Monaco Editor Setup ---
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.28.1/min/vs' } });
         require(['vs/editor/editor.main'], function () {
             cssEditorInstance = monaco.editor.create(document.getElementById('css-editor-container'), {
@@ -231,7 +231,7 @@
             });
         });
 
-        // --- Utility functions ---
+        // --- Utility Functions ---
 
         /**
          * Downloads a given blob with a specified filename.
@@ -480,9 +480,41 @@
         // --- Event Handlers for UI elements ---
         
         document.getElementById('export-html-btn').addEventListener('click', () => {
-            const htmlContent = document.documentElement.outerHTML;
+            const svgContent = svg.outerHTML;
+            const cssContent = svgStyles.textContent;
+
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Splash Animation</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6;
+        }
+        svg {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+        }
+        ${cssContent}
+    </style>
+</head>
+<body>
+    ${svgContent}
+</body>
+</html>
+`;
             const blob = new Blob([htmlContent], { type: 'text/html' });
-            downloadBlob(blob, 'splash_animator.html');
+            downloadBlob(blob, 'splash_animation.html');
             showMessage("Exported as .html");
         });
         
