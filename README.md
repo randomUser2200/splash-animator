@@ -2,7 +2,7 @@
 
 Animation tool with modern web standards for beginners
 
-File size: 31 KB
+File size: 47 KB
 
 This is an animation tool inspired by Flash (now obsolete) with modern web standards: a visual editor, minimal UI fluff, and a CSS editor.
 
