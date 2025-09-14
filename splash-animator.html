@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splash Animator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Monaco Editor dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.28.1/min/vs/loader.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        svg {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            touch-action: none;
+        }
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #3b82f6;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        .drawing-cursor {
+            cursor: crosshair;
+        }
+        .selection-cursor {
+            cursor: pointer;
+        }
+        .erase-cursor {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eraser"><path d="M14 5l7 7-7 7-7-7 7-7zM8 12h8"></path></svg>') 16 16, crosshair;
+        }
+        .selected-shape {
+            outline: 2px dashed #3b82f6;
+            outline-offset: 4px;
+        }
+        /* Style the Monaco Editor container */
+        #css-editor-container {
+            width: 100%;
+            height: 200px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="p-6">
+
+    <div id="message-box" class="message-box"></div>
+    
+    <!-- Custom Modal for Confirmation -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-lg font-semibold mb-4">Are you sure?</h3>
+            <p class="text-gray-700 mb-6">This will permanently clear all shapes on the canvas.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="modal-cancel-btn" class="bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-full hover:bg-gray-400 transition-colors">Cancel</button>
+                <button id="modal-confirm-btn" class="bg-red-500 text-white font-semibold px-6 py-2 rounded-full hover:bg-red-600 transition-colors">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-8 mb-6">
+        <div class="flex items-center space-x-4">
+            <img src="splash-logo.png" alt="Splash Animator Logo" class="w-12 h-12 rounded-full shadow-md">
+            <h1 class="text-3xl font-bold text-gray-800">Splash Animator</h1>
+            <a href="https://github.com/randomUser2200/splash-animator/" target="_blank" class="flex items-center space-x-2 bg-gray-200 text-gray-800 hover:bg-gray-300 px-4 py-2 rounded-full font-medium transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.6.11 1.05-.26 1.05-.584v-1.996c-3.342.727-4.04-1.61-4.04-1.61-.546-1.387-1.332-1.756-1.332-1.756-1.088-.745.083-.73.083-.73 1.205.085 1.838 1.238 1.838 1.238 1.07 1.835 2.809 1.305 3.493.997.108-.775.419-1.305.762-1.605-2.665-.304-5.466-1.334-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.12-.303-.535-1.52.115-3.176 0 0 1-.32 3.285 1.23.955-.266 1.96-.4 2.96-.4.998 0 2.003.134 2.96.4 2.28-1.55 3.285-1.23 3.285-1.23.65 1.656.235 2.873.115 3.176.77.84 1.235 1.91 1.235 3.22 0 4.609-2.801 5.626-5.475 5.92-.415.358-.8.95-.8 1.92v2.842c0 .324.444.694 1.05.584 4.768-1.587 8.207-6.085 8.207-11.387c0-6.627-5.374-12-12-12z"/>
+                </svg>
+                <span>GitHub</span>
+            </a>
+        </div>
+        <div class="flex flex-wrap items-center justify-center space-x-2 md:space-x-4">
+            <button id="rect-btn" class="tool-btn bg-blue-500 text-white transition-colors duration-200 px-4 py-2 rounded-full font-medium">Rectangle</button>
+            <button id="circle-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Circle</button>
+            <button id="line-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Line</button>
+            <button id="text-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Text</button>
+            <button id="select-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Select</button>
+            <button id="erase-btn" class="tool-btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 px-4 py-2 rounded-full font-medium">Erase</button>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-6 items-start">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full lg:w-3/4 flex-grow">
+            <div class="aspect-video">
+                <svg id="drawing-area" class="w-full h-full rounded-lg drawing-cursor">
+                    <!-- This style tag will be populated by the CSS editor -->
+                    <style id="svg-styles"></style>
+                </svg>
+            </div>
+        </div>
+
+        <div class="flex flex-col space-y-4 w-full lg:w-1/4 flex-shrink-0">
+            <!-- Properties & Styling Panel -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Properties & Styling</h2>
+                <div class="flex flex-col space-y-3">
+                    <div class="flex items-center space-x-2">
+                        <label for="fill-color" class="text-gray-600 font-medium">Fill:</label>
+                        <input type="color" id="fill-color" value="#005B99" class="w-8 h-8 rounded-full border-none cursor-pointer">
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="shape-id" class="text-gray-600 font-medium mb-1">Shape ID:</label>
+                        <input type="text" id="shape-id" placeholder="Enter ID..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
+                    </div>
+                    <button id="apply-id-btn" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Apply ID</button>
+                    <!-- New Text Input for Text Tool -->
+                    <div id="text-tool-controls" class="flex flex-col space-y-3 hidden">
+                        <label for="text-content" class="text-gray-600 font-medium mb-1">Text Content:</label>
+                        <input type="text" id="text-content" placeholder="Enter text..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CSS Editor panel -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">CSS Editor</h2>
+                <div id="css-editor-container"></div>
+                <button id="apply-css-btn" class="mt-3 w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Apply CSS</button>
+            </div>
+
+            <!-- CSS Resources panel -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">CSS Resources</h2>
+                <p class="text-gray-600 mb-4">New to CSS? Here are some great places to learn!</p>
+                <ul class="list-disc pl-5 space-y-2 text-blue-600 font-semibold">
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank" class="hover:underline">MDN Web Docs: CSS</a></li>
+                    <li><a href="https://www.freecodecamp.org/learn/responsive-web-design/" target="_blank" class="hover:underline">freeCodeCamp: Responsive Web Design</a></li>
+                    <li><a href="https://www.w3schools.com/css/" target="_blank" class="hover:underline">W3Schools: CSS Tutorial</a></li>
+                </ul>
+            </div>
+
+            <!-- Export & Import panel -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Export & Import</h2>
+                <div class="flex flex-col space-y-3">
+                    <button id="export-html-btn" class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200">Export as .html</button>
+                    <div class="relative">
+                        <button id="import-image-btn" class="w-full bg-gray-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-600 transition-colors duration-200">Import Image</button>
+                        <input type="file" id="import-image-file" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                    </div>
+                    <button id="clear-btn" class="bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-colors duration-200">Clear Canvas</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a id="download-link" class="hidden"></a>
+
+    <script>
+        // --- Globals ---
+        const svg = document.getElementById('drawing-area');
+        const svgStyles = document.getElementById('svg-styles');
+        const fillInput = document.getElementById('fill-color');
+        const shapeIdInput = document.getElementById('shape-id');
+        const textContentInput = document.getElementById('text-content');
+        const textToolControls = document.getElementById('text-tool-controls');
+        const downloadLink = document.getElementById('download-link');
+        const importImageFile = document.getElementById('import-image-file');
+        const messageBox = document.getElementById('message-box');
+        const confirmModal = document.getElementById('confirm-modal');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+        let isDrawing = false;
+        let startPoint = { x: 0, y: 0 };
+        let currentShape = null;
+        let currentTool = 'rectangle';
+        let selectedShape = null;
+        let shapes = []; // The internal data model for the drawing
+        let cssEditorInstance;
+
+        // Variables for moving selected shapes
+        let isDragging = false;
+        let dragStartPoint = { x: 0, y: 0 };
+        let shapeStartAttrs = {};
+
+        // --- Monaco Editor setup ---
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.28.1/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            cssEditorInstance = monaco.editor.create(document.getElementById('css-editor-container'), {
+                value: '',
+                language: 'css',
+                theme: 'vs-light',
+                automaticLayout: true
+            });
+        });
+
+        // --- Utility functions ---
+
+        /**
+         * Downloads a given blob with a specified filename.
+         * @param {Blob} blob The blob to download.
+         * @param {string} filename The filename for the downloaded file.
+         */
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            downloadLink.href = url;
+            downloadLink.download = filename;
+            downloadLink.click();
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Shows a temporary message to the user.
+         * @param {string} message The message to display.
+         * @param {boolean} isError If true, displays an error message style.
+         */
+        function showMessage(message, isError = false) {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show';
+            if (isError) {
+                messageBox.classList.add('bg-red-500');
+                messageBox.classList.remove('bg-blue-500');
+            } else {
+                messageBox.classList.add('bg-blue-500');
+                messageBox.classList.remove('bg-red-500');
+            }
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        /**
+         * Clears all shapes from the SVG canvas and the data model.
+         */
+        function clearDrawing() {
+            while (svg.lastChild && svg.lastChild.tagName !== 'style') {
+                svg.removeChild(svg.lastChild);
+            }
+            shapes = [];
+            selectedShape = null;
+        }
+
+        /**
+         * Selects a shape, highlighting it and updating the properties panel.
+         * @param {Element} shape The SVG shape element to select.
+         */
+        function selectShape(shape) {
+            if (selectedShape) {
+                selectedShape.classList.remove('selected-shape');
+            }
+            selectedShape = shape;
+            selectedShape.classList.add('selected-shape');
+
+            // Update properties panel
+            fillInput.value = selectedShape.getAttribute('fill') || selectedShape.getAttribute('stroke') || '#000000';
+            shapeIdInput.value = selectedShape.id || '';
+        }
+
+        /**
+         * Applies the CSS from the editor to the SVG style block.
+         */
+        function applyCss() {
+            svgStyles.textContent = cssEditorInstance.getValue();
+            showMessage("CSS applied!");
+        }
+
+        // --- Event Handlers for drawing and selection ---
+
+        function onDrawingClick(e) {
+            if (currentTool === 'erase') {
+                const target = e.target;
+                if (target.tagName === 'rect' || target.tagName === 'circle' || target.tagName === 'line' || target.tagName === 'image' || target.tagName === 'text') {
+                    // Remove the shape from the SVG and the data model
+                    target.remove();
+                    shapes = shapes.filter(shape => shape.element !== target);
+                    showMessage("Shape erased.");
+                }
+            } else if (currentTool === 'select') {
+                const target = e.target;
+                if (target.tagName === 'rect' || target.tagName === 'circle' || target.tagName === 'line' || target.tagName === 'image' || target.tagName === 'text') {
+                    selectShape(target);
+                } else {
+                    if (selectedShape) {
+                        selectedShape.classList.remove('selected-shape');
+                        selectedShape = null;
+                        shapeIdInput.value = '';
+                    }
+                }
+            } else if (currentTool === 'text') {
+                const rect = svg.getBoundingClientRect();
+                const clickPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                
+                const textContent = textContentInput.value.trim();
+                if (!textContent) {
+                    showMessage("Please enter text content.", true);
+                    return;
+                }
+                
+                // Deselect any previous shape
+                if (selectedShape) {
+                    selectedShape.classList.remove('selected-shape');
+                    selectedShape = null;
+                }
+                
+                const newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newText.setAttribute('x', clickPoint.x);
+                newText.setAttribute('y', clickPoint.y);
+                newText.setAttribute('fill', fillInput.value);
+                newText.setAttribute('font-size', '24');
+                newText.textContent = textContent;
+                
+                svg.appendChild(newText);
+                shapes.push({
+                    element: newText,
+                    type: 'text',
+                    attributes: { x: clickPoint.x, y: clickPoint.y, fill: fillInput.value, 'font-size': '24', content: textContent }
+                });
+                showMessage("Text added successfully!");
+            }
+        }
+
+        function onMouseDown(e) {
+            const rect = svg.getBoundingClientRect();
+            const clickPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            if (currentTool !== 'select' && currentTool !== 'erase' && currentTool !== 'text') {
+                // Drawing a new shape
+                isDrawing = true;
+                startPoint = clickPoint;
+
+                // Deselect any previous shape
+                if (selectedShape) {
+                    selectedShape.classList.remove('selected-shape');
+                    selectedShape = null;
+                }
+
+                currentShape = document.createElementNS('http://www.w3.org/2000/svg', currentTool === 'rectangle' ? 'rect' : currentTool === 'circle' ? 'circle' : 'line');
+                currentShape.setAttribute('fill', fillInput.value);
+                currentShape.setAttribute('stroke', fillInput.value);
+
+                if (currentTool === 'rectangle') {
+                    currentShape.setAttribute('x', startPoint.x);
+                    currentShape.setAttribute('y', startPoint.y);
+                    currentShape.setAttribute('width', '0');
+                    currentShape.setAttribute('height', '0');
+                } else if (currentTool === 'circle') {
+                    currentShape.setAttribute('cx', startPoint.x);
+                    currentShape.setAttribute('cy', startPoint.y);
+                    currentShape.setAttribute('r', '0');
+                } else if (currentTool === 'line') {
+                    currentShape.setAttribute('x1', startPoint.x);
+                    currentShape.setAttribute('y1', startPoint.y);
+                    currentShape.setAttribute('x2', currentPoint.x);
+                    currentShape.setAttribute('y2', currentPoint.y);
+                    currentShape.setAttribute('stroke-width', '2');
+                }
+                
+                svg.appendChild(currentShape);
+            } else if (currentTool === 'select' && (e.target.tagName === 'rect' || e.target.tagName === 'circle' || e.target.tagName === 'line' || e.target.tagName === 'image' || e.target.tagName === 'text')) {
+                // Starting to drag a selected shape
+                isDragging = true;
+                dragStartPoint = clickPoint;
+                const tagName = e.target.tagName;
+                selectedShape = e.target;
+                shapeStartAttrs = {
+                    x: tagName === 'rect' || tagName === 'image' || tagName === 'text' ? parseFloat(selectedShape.getAttribute('x')) : null,
+                    y: tagName === 'rect' || tagName === 'image' || tagName === 'text' ? parseFloat(selectedShape.getAttribute('y')) : null,
+                    cx: tagName === 'circle' ? parseFloat(selectedShape.getAttribute('cx')) : null,
+                    cy: tagName === 'circle' ? parseFloat(selectedShape.getAttribute('cy')) : null,
+                    x1: tagName === 'line' ? parseFloat(selectedShape.getAttribute('x1')) : null,
+                    y1: tagName === 'line' ? parseFloat(selectedShape.getAttribute('y1')) : null,
+                    x2: tagName === 'line' ? parseFloat(selectedShape.getAttribute('x2')) : null,
+                    y2: tagName === 'line' ? parseFloat(selectedShape.getAttribute('y2')) : null
+                };
+            }
+        }
+
+        function onMouseMove(e) {
+            const rect = svg.getBoundingClientRect();
+            const currentPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            if (isDrawing) {
+                // Continue drawing a new shape
+                if (currentTool === 'rectangle') {
+                    const x = Math.min(startPoint.x, currentPoint.x);
+                    const y = Math.min(startPoint.y, currentPoint.y);
+                    const width = Math.abs(startPoint.x - currentPoint.x);
+                    const height = Math.abs(startPoint.y - currentPoint.y);
+                    currentShape.setAttribute('x', x);
+                    currentShape.setAttribute('y', y);
+                    currentShape.setAttribute('width', width);
+                    currentShape.setAttribute('height', height);
+                } else if (currentTool === 'circle') {
+                    const dx = currentPoint.x - startPoint.x;
+                    const dy = currentPoint.y - startPoint.y;
+                    const r = Math.sqrt(dx * dx + dy * dy);
+                    currentShape.setAttribute('r', r);
+                } else if (currentTool === 'line') {
+                    currentShape.setAttribute('x2', currentPoint.x);
+                    currentShape.setAttribute('y2', currentPoint.y);
+                }
+            } else if (isDragging && selectedShape) {
+                // Move the selected shape
+                const dx = currentPoint.x - dragStartPoint.x;
+                const dy = currentPoint.y - dragStartPoint.y;
+
+                const tagName = selectedShape.tagName;
+                if (tagName === 'rect' || tagName === 'image' || tagName === 'text') {
+                    selectedShape.setAttribute('x', shapeStartAttrs.x + dx);
+                    selectedShape.setAttribute('y', shapeStartAttrs.y + dy);
+                } else if (tagName === 'circle') {
+                    selectedShape.setAttribute('cx', shapeStartAttrs.cx + dx);
+                    selectedShape.setAttribute('cy', shapeStartAttrs.cy + dy);
+                } else if (tagName === 'line') {
+                    selectedShape.setAttribute('x1', shapeStartAttrs.x1 + dx);
+                    selectedShape.setAttribute('y1', shapeStartAttrs.y1 + dy);
+                    selectedShape.setAttribute('x2', shapeStartAttrs.x2 + dx);
+                    selectedShape.setAttribute('y2', shapeStartAttrs.y2 + dy);
+                }
+            }
+        }
+
+        function onMouseUp() {
+            if (isDrawing) {
+                // Finalize the new shape
+                isDrawing = false;
+                if (currentShape) {
+                    const shapeData = {
+                        element: currentShape,
+                        type: currentShape.tagName,
+                        attributes: {}
+                    };
+                    for (const attr of currentShape.attributes) {
+                        shapeData.attributes[attr.name] = attr.value;
+                    }
+                    shapes.push(shapeData);
+                    currentShape = null;
+                }
+            }
+            isDragging = false;
+        }
+
+        // --- Event Handlers for UI elements ---
+        
+        document.getElementById('export-html-btn').addEventListener('click', () => {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            downloadBlob(blob, 'splash_animator.html');
+            showMessage("Exported as .html");
+        });
+        
+        importImageFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imageUrl = event.target.result;
+                const newImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                newImage.setAttribute('href', imageUrl);
+                newImage.setAttribute('x', '10');
+                newImage.setAttribute('y', '10');
+                newImage.setAttribute('width', '100');
+                newImage.setAttribute('height', '100');
+                
+                svg.appendChild(newImage);
+                shapes.push({
+                    element: newImage,
+                    type: 'image',
+                    attributes: { href: imageUrl, x: '10', y: '10', width: '100', height: '100' }
+                });
+                showMessage("Image imported successfully!");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            confirmModal.classList.add('visible');
+        });
+        
+        modalCancelBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('visible');
+        });
+
+        modalConfirmBtn.addEventListener('click', () => {
+            clearDrawing();
+            confirmModal.classList.remove('visible');
+            showMessage("Canvas cleared.");
+        });
+        
+        document.getElementById('apply-id-btn').addEventListener('click', () => {
+            if (selectedShape) {
+                const newId = shapeIdInput.value.trim();
+                if (newId) {
+                    selectedShape.id = newId;
+                    showMessage(`ID '${newId}' applied.`);
+                } else {
+                    selectedShape.removeAttribute('id');
+                    showMessage("ID removed.");
+                }
+            } else {
+                showMessage("Please select a shape first.", true);
+            }
+        });
+
+        document.getElementById('apply-css-btn').addEventListener('click', applyCss);
+        
+        fillInput.addEventListener('input', () => {
+            if (selectedShape) {
+                // Only apply fill/stroke to shapes that are not images or text
+                if (selectedShape.tagName !== 'image') {
+                    selectedShape.setAttribute('fill', fillInput.value);
+                } else {
+                    showMessage("Cannot change fill color on an image.", true);
+                }
+            }
+        });
+
+        // --- Initial Setup and Event Listeners ---
+        window.onload = function() {
+            // Set up tool selection listeners
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-btn').forEach(b => {
+                        b.classList.remove('bg-blue-500', 'text-white');
+                        b.classList.add('bg-gray-200', 'text-gray-800');
+                    });
+                    btn.classList.add('bg-blue-500', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-800');
+                    
+                    const newTool = btn.id.split('-')[0];
+                    currentTool = newTool;
+                    
+                    // Show/hide specific controls for text tool
+                    if (currentTool === 'text') {
+                        textToolControls.classList.remove('hidden');
+                    } else {
+                        textToolControls.classList.add('hidden');
+                    }
+                    
+                    // Update cursor based on selected tool
+                    svg.classList.remove('drawing-cursor', 'selection-cursor', 'erase-cursor');
+                    if (currentTool === 'select') {
+                        svg.classList.add('selection-cursor');
+                    } else if (currentTool === 'erase') {
+                        svg.classList.add('erase-cursor');
+                    } else {
+                        svg.classList.add('drawing-cursor');
+                    }
+                });
+            });
+
+            // Set up drawing event listeners for both mouse and touch
+            svg.addEventListener('mousedown', onMouseDown);
+            svg.addEventListener('mousemove', onMouseMove);
+            svg.addEventListener('mouseup', onMouseUp);
+
+            // Add listener for shape selection and erasing
+            svg.addEventListener('click', onDrawingClick);
+
+            svg.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                onMouseDown(e.touches[0]);
+            });
+            svg.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                onMouseMove(e.touches[0]);
+            });
+            svg.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                onMouseUp(e.changedTouches[0]);
+            });
+        };
+    </script>
+</body>
+</html>
